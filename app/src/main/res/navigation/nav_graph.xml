@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/toDoList">
+
+    <fragment
+        android:id="@+id/toDoList"
+        android:name="com.example.futureme.ToDoList"
+        android:label="fragment_to_do_list"
+        tools:layout="@layout/fragment_to_do_list" />
+    <fragment
+        android:id="@+id/analytics"
+        android:name="com.example.futureme.Analytics"
+        android:label="fragment_analytics"
+        tools:layout="@layout/fragment_analytics" />
+    <fragment
+        android:id="@+id/taskView"
+        android:name="com.example.futureme.TaskView"
+        android:label="fragment_task_view"
+        tools:layout="@layout/fragment_task_view" />
+    <fragment
+        android:id="@+id/settings"
+        android:name="com.example.futureme.Settings"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+</navigation>
