@@ -6,16 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.example.futureme.databinding.FragmentTaskViewBinding
+import com.example.futureme.databinding.FragmentAddEditTaskBinding
 
 
-class TaskViewFragment : Fragment() {
-    private var _binding: FragmentTaskViewBinding? = null
+class AddEditTaskFragment : Fragment() {
+    private var _binding:FragmentAddEditTaskBinding? = null
     private val binding get() = _binding!!
 
 
     override fun onCreateView(inflate: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        _binding = FragmentTaskViewBinding.inflate(inflate, container, false)
+        _binding = FragmentAddEditTaskBinding.inflate(inflate, container, false)
         val view = binding.root
 
 
@@ -31,6 +31,7 @@ class TaskViewFragment : Fragment() {
 
         return view
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

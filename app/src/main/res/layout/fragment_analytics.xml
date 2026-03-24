@@ -1,14 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     tools:context=".Analytics">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <data>
+        <!-- TODO: Update the Data Binding -->
+        <variable
+            name="viewModel"
+            type="com.example.futureme.TasksViewModel" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Analytics Fragment" />
+        android:padding="24dp"
+        android:orientation="vertical">
 
-</FrameLayout>
+        <!--Placeholder Text view for graphs-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Analytics graph goes here" />
+
+        <!--Future Burden score title-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:text="Future Burden Score" />
+
+        <!--Future Burden score output-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:textStyle="normal"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:text="n/a" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <!--Postponed tasks title-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="Total postponed tasks:"/>
+
+            <!--Postponed tasks output-->
+            <TextView
+                android:id="@+id/totalPostponedTasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textStyle="normal"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="n/a"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <!--Average delay length title-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="Average delay length:"/>
+
+            <!--Average delay length output-->
+            <TextView
+                android:id="@+id/averageDelayLength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textStyle="normal"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="n/a"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <!--Num of overdue tasks title-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="Number of overdue tasks:"/>
+
+            <!--Num of overdue tasks output-->
+            <TextView
+                android:id="@+id/numOverdueTasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textStyle="normal"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="n/a"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <!--Total deferrals title-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="Total Deferrals:"/>
+
+            <!--Total deferrals output-->
+            <TextView
+                android:id="@+id/totalDeferrals"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textStyle="normal"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="n/a"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <!--Most deferred task title-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="Most deferred task:"/>
+
+            <!--Most deferred task output-->
+            <TextView
+                android:id="@+id/mostDeferredTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textStyle="normal"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:text="n/a"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</layout>
