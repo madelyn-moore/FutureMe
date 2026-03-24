@@ -1,288 +1,301 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".addEditTaskFragment">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <!-- TODO: Update the Data Binding -->
         <variable
             name="viewModel"
             type="com.example.futureme.TasksViewModel" />
     </data>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
+        tools:context=".AddEditTaskFragment">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <!--Input for task name-->
-            <EditText
-                android:id="@+id/addEditTaskName"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:maxWidth="120dp"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:textSize="24sp"
-                android:textColor="@color/black"
-                android:inputType="text"
-                android:hint="Task Name"
-                android:text="@{viewModel.newTaskName}" />
-
+            <!-- Top row: task name + due date -->
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:minWidth="120dp">
-
-                <!--New due date title-->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
-                    android:text="New Due Date:" />
-
-                <!--New due date input-->
-                <EditText
-                    android:id="@+id/addEditNewDueDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textStyle="normal"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
-                    android:inputType="text"
-                    android:hint="New Due Date"
-                    android:text="@={viewModel.newDueDate}" />
-
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <!--Tags (not entirely sure how to implement this yet)-->
-            <TextView
-                android:id="@+id/tags"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:textStyle="normal"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="Tags"/>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:minWidth="120dp">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <!--Date Postponed title-->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
-                    android:text="Date Postponed:" />
-
-                <!--Date Postponed input-->
                 <EditText
-                    android:id="@+id/datePostponed"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textStyle="normal"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
+                    android:id="@+id/addEditTaskName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="12dp"
+                    android:hint="Task Name"
                     android:inputType="text"
-                    android:hint="Date Postponed"
-                    android:text="@={viewModel.newDatePostponed}" />
+                    android:text="@={viewModel.newTaskName}"
+                    android:textColor="@color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Due Date (MM/dd/yyyy):"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/addEditNewDueDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="03/24/2026"
+                        android:inputType="text"
+                        android:text="@={viewModel.newDueDate}"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+                </LinearLayout>
             </LinearLayout>
 
-        </LinearLayout>
-
-        <!--Description title-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:text="Description:" />
-
-        <!--Description input-->
-        <EditText
-            android:id="@+id/addEditDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textStyle="normal"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:inputType="textMultiLine"
-            android:hint="Description goes here..."
-            android:text="@={viewModel.newDescription}" />
-
-        <!--Why task was pushed off title-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:text="Why task was pushed off" />
-
-        <!--Why task was pushed off input-->
-        <EditText
-            android:id="@+id/addEditWhyTaskPushedOff"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textStyle="normal"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:inputType="textMultiLine"
-            android:hint="Why task was pushed off"
-            android:text="@={viewModel.newWhyTaskPushedOff}" />
-
-        <!--Penalties for pushing off task (if any) title-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:text="Penalties for pushing off task (if any):" />
-
-        <!--Penalties for pushing off task (if any) input-->
-        <EditText
-            android:id="@+id/addEditPenalties"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textStyle="normal"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:hint="Penalties for pushing off task (if any)"
-            android:inputType="textMultiLine"
-            android:text="@={viewModel.newPenalties}" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="1">
-
+            <!-- Second row: tags + date postponed -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <!--Number of delayed days title-->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tags:"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/addEditTags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Tags"
+                        android:inputType="text"
+                        android:text="@={viewModel.newTags}"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Date Postponed (MM/dd/yyyy):"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/datePostponed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="03/30/2026"
+                        android:inputType="text"
+                        android:text="@={viewModel.newDatePostponed}"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Description -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Description:"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/addEditDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="top|start"
+                android:hint="Description goes here..."
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:text="@={viewModel.newDescription}"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Why task was pushed off -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Why task was pushed off:"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/addEditWhyTaskPushedOff"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="top|start"
+                android:hint="Why task was pushed off"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:text="@={viewModel.newWhyTaskPushedOff}"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Penalties -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Penalties for pushing off task (if any):"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/addEditPenalties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="top|start"
+                android:hint="Penalties for pushing off task (if any)"
+                android:inputType="textMultiLine"
+                android:minLines="2"
+                android:text="@={viewModel.newPenalties}"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Delay and overdue row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Number of delayed days:"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <!-- Display only: calculated automatically -->
+                    <TextView
+                        android:id="@+id/numDaysDelayed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:text="@{viewModel.newNumDaysDelayed}"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Display only: calculated automatically -->
+                    <CheckBox
+                        android:id="@+id/overdueStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="@{viewModel.newOverdueStatus}"
+                        android:enabled="false"
+                        android:text="Overdue"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Date completed -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
+                    android:layout_gravity="center_vertical"
+                    android:text="Date Completed (MM/dd/yyyy):"
                     android:textColor="@color/black"
-                    android:text="Total Number of delayed days:" />
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-                <!--Number of delayed days output-->
-                <TextView
-                    android:id="@+id/numDaysDelayed"
-                    android:layout_width="match_parent"
+                <EditText
+                    android:id="@+id/dateCompleted"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textStyle="normal"
-                    android:textSize="16sp"
+                    android:layout_marginStart="8dp"
+                    android:hint="04/02/2026"
+                    android:inputType="text"
+                    android:text="@={viewModel.newDateCompleted}"
                     android:textColor="@color/black"
-                    android:text="n/a" />
+                    android:textSize="16sp" />
             </LinearLayout>
 
-            <!--Overdue output-->
-            <TextView
-                android:id="@+id/overdueStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="Overdue"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <!--Date completed by title-->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:layout_gravity="center_vertical"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="Date Completed by:"/>
-
-            <!--Date completed by output-->
-            <TextView
-                android:id="@+id/dateCompleted"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:layout_gravity="center_vertical"
-                android:textStyle="normal"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="2/34/25"/>
-
+            <!-- Buttons -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
                 android:orientation="horizontal">
 
-                <!--Save Button-->
                 <Button
                     android:id="@+id/saveButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:text="Save"
-                    android:onClick="@{()->viewModel.addTask()}"/>
+                    android:layout_marginEnd="8dp"
+                    android:text="Save" />
 
-                <!--Delete Button-->
                 <Button
                     android:id="@+id/deleteButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:textSize="12sp"
-                    android:text="Delete" />
-
+                    android:text="Delete"
+                    android:textSize="12sp" />
             </LinearLayout>
+
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 </layout>
