@@ -1,175 +1,250 @@
 package com.example.futureme
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
-class TasksViewModel(val dao: TaskDao) : ViewModel() {
+class TasksViewModel(private val dao: TaskDao) : ViewModel() {
 
+    // =========================================
+    // DATABASE
+    // =========================================
+    val allTasks: LiveData<List<Task>> = dao.getAllTasks()
+
+    private var currentTaskId: Long = 0L
+
+    // =========================================
+    // ADD / EDIT TASK FIELDS
+    // =========================================
     val newTaskName = MutableLiveData("")
-    val newTags = MutableLiveData("")
-    val newDueDate = MutableLiveData("")
-    val newDatePostponed = MutableLiveData("")
-    val newDescription = MutableLiveData("")
-    val newWhyTaskPushedOff = MutableLiveData("")
-    val newPenalties = MutableLiveData("")
-    val newNumDaysDelayed = MutableLiveData("0")
-    val newOverdueStatus = MutableLiveData(false)
-    val newDateCompleted = MutableLiveData("")
+    val newTaskTags = MutableLiveData("")
+    val newTaskDueDate = MutableLiveData("")
+    val newTaskDatePostponed = MutableLiveData("")
+    val newTaskDescription = MutableLiveData("")
+    val newTaskWhyPushedOff = MutableLiveData("")
+    val newTaskPenalties = MutableLiveData("n/a")
+    val newTaskDateCompleted = MutableLiveData("")
+    val newTaskNumDaysDelayed = MutableLiveData("0")
+    val newTaskOverdueStatus = MutableLiveData(false)
 
-    val tasks = dao.getAllTasks()
+    // =========================================
+    // XML BINDING ALIASES
+    // =========================================
+    val newName = newTaskName
+    val newTags = newTaskTags
+    val newDueDate = newTaskDueDate
+    val newDatePostponed = newTaskDatePostponed
+    val newDescription = newTaskDescription
+    val newWhyTaskPushedOff = newTaskWhyPushedOff
+    val newWhyPushedOff = newTaskWhyPushedOff
+    val newPenalties = newTaskPenalties
+    val newDateCompleted = newTaskDateCompleted
+    val newNumDaysDelayed = newTaskNumDaysDelayed
+    val newOverdueStatus = newTaskOverdueStatus
 
-    private var currentTaskId: Long? = null
+    // =========================================
+    // SEARCH + FILTERS
+    // =========================================
+    private val _searchQuery = MutableLiveData("")
+    val searchQuery: LiveData<String> = _searchQuery
 
-    // Date formatter for MM/dd/yyyy
-    // setLenient(false) makes invalid dates like 02/30/2026 fail
-    private val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.US).apply {
-        isLenient = false
+    private val _statusFilter = MutableLiveData(TaskStatusFilter.ALL)
+    val statusFilter: LiveData<TaskStatusFilter> = _statusFilter
+
+    private val _sortOption = MutableLiveData(TaskSortOption.DUE_DATE_ASC)
+    val sortOption: LiveData<TaskSortOption> = _sortOption
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query.trim()
     }
 
-    val totalPostponedCount: LiveData<String> = tasks.map { list ->
-        list.count { it.datePostponed.isNotEmpty() }.toString()
+    fun updateStatusFilter(filter: TaskStatusFilter) {
+        _statusFilter.value = filter
     }
 
-    val averageDelay: LiveData<String> = tasks.map { list ->
-        val delayedTasks = list.filter { it.numDaysDelayed.isNotEmpty() }
-        if (delayedTasks.isEmpty()) {
-            "0.0"
-        } else {
-            val totalDays = delayedTasks.sumOf { it.numDaysDelayed.toDoubleOrNull() ?: 0.0 }
-            String.format("%.2f", totalDays / delayedTasks.size)
+    fun updateSortOption(sort: TaskSortOption) {
+        _sortOption.value = sort
+    }
+
+    // =========================================
+    // FILTERED TASK LIST
+    // =========================================
+    val filteredTasks = MediatorLiveData<List<Task>>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            val query = _searchQuery.value ?: ""
+            val status = _statusFilter.value ?: TaskStatusFilter.ALL
+            val sort = _sortOption.value ?: TaskSortOption.DUE_DATE_ASC
+            value = applyFilters(tasks, query, status, sort)
+        }
+
+        addSource(allTasks) { update() }
+        addSource(_searchQuery) { update() }
+        addSource(_statusFilter) { update() }
+        addSource(_sortOption) { update() }
+    }
+
+    private fun applyFilters(
+        tasks: List<Task>,
+        query: String,
+        status: TaskStatusFilter,
+        sort: TaskSortOption
+    ): List<Task> {
+        val filtered = tasks.filter { task ->
+            val matchesSearch =
+                task.name.contains(query, ignoreCase = true) ||
+                        task.tags.contains(query, ignoreCase = true) ||
+                        task.description.contains(query, ignoreCase = true) ||
+                        task.dueDate.contains(query, ignoreCase = true) ||
+                        task.datePostponed.contains(query, ignoreCase = true) ||
+                        task.whyTaskPushedOff.contains(query, ignoreCase = true) ||
+                        task.penalties.contains(query, ignoreCase = true) ||
+                        task.dateCompleted.contains(query, ignoreCase = true) ||
+                        task.numDaysDelayed.contains(query, ignoreCase = true)
+
+            val matchesStatus = when (status) {
+                TaskStatusFilter.ALL -> true
+                TaskStatusFilter.OVERDUE -> calculateOverdue(task) && !task.isCompleted
+                TaskStatusFilter.COMPLETED -> task.isCompleted
+                TaskStatusFilter.INCOMPLETE -> !task.isCompleted
+            }
+
+            matchesSearch && matchesStatus
+        }
+
+        return when (sort) {
+            TaskSortOption.DUE_DATE_ASC ->
+                filtered.sortedBy { parseDate(it.dueDate)?.time ?: Long.MAX_VALUE }
+
+            TaskSortOption.DUE_DATE_DESC ->
+                filtered.sortedByDescending { parseDate(it.dueDate)?.time ?: Long.MIN_VALUE }
+
+            TaskSortOption.NAME_AZ ->
+                filtered.sortedBy { it.name.lowercase(Locale.getDefault()) }
+
+            TaskSortOption.TAG_AZ ->
+                filtered.sortedBy { it.tags.lowercase(Locale.getDefault()) }
         }
     }
 
-    val overdueCount: LiveData<String> = tasks.map { list ->
-        list.count { it.overdueStatus }.toString()
-    }
-
-    val mostDeferredTaskName: LiveData<String> = tasks.map { list ->
-        list.filter { it.numDaysDelayed.isNotEmpty() }
-            .maxByOrNull { it.numDaysDelayed.toDoubleOrNull() ?: 0.0 }
-            ?.name ?: "None"
-    }
-
-    val tasksString: LiveData<String> = tasks.map { taskList ->
-        formatTasks(taskList)
-    }
-
-    // Safely parse a date string in MM/dd/yyyy format
-    private fun parseDate(dateString: String): Date? {
-        return try {
-            formatter.parse(dateString)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    // Calculate delayed days using due date and postponed date
-    private fun calculateDelayedDays(dueDate: String, postponedDate: String): String {
-        if (dueDate.isBlank() || postponedDate.isBlank()) return "0"
-
-        val due = parseDate(dueDate) ?: return "0"
-        val postponed = parseDate(postponedDate) ?: return "0"
-
-        val diffInMillis = postponed.time - due.time
-        val daysBetween = diffInMillis / (1000 * 60 * 60 * 24)
-
-        return if (daysBetween < 0) "0" else daysBetween.toString()
-    }
-
-    // Calculate overdue status using today's date
-    private fun calculateOverdueStatus(dueDate: String): Boolean {
-        if (dueDate.isBlank()) return false
-
-        val due = parseDate(dueDate) ?: return false
-        val today = Date()
-
-        return today.after(due)
+    // =========================================
+    // ADD / EDIT SUPPORT
+    // =========================================
+    fun loadTask(task: Task) {
+        currentTaskId = task.taskId
+        newTaskName.value = task.name
+        newTaskTags.value = task.tags
+        newTaskDueDate.value = task.dueDate
+        newTaskDatePostponed.value = task.datePostponed
+        newTaskDescription.value = task.description
+        newTaskWhyPushedOff.value = task.whyTaskPushedOff
+        newTaskPenalties.value = task.penalties
+        newTaskDateCompleted.value = task.dateCompleted
+        newTaskNumDaysDelayed.value = task.numDaysDelayed
+        newTaskOverdueStatus.value = task.overdueStatus
     }
 
     fun recalculateTaskStats() {
-        val dueDateValue = newDueDate.value ?: ""
-        val postponedDateValue = newDatePostponed.value ?: ""
+        val dueDate = newTaskDueDate.value?.trim() ?: ""
+        val completedDate = newTaskDateCompleted.value?.trim() ?: ""
 
-        newNumDaysDelayed.value = calculateDelayedDays(dueDateValue, postponedDateValue)
-        newOverdueStatus.value = calculateOverdueStatus(dueDateValue)
+        val overdue = if (completedDate.isNotBlank()) false else calculateOverdueFromString(dueDate)
+        val delayedDays = calculateDelayedDaysString(dueDate)
+
+        newTaskOverdueStatus.value = overdue
+        newTaskNumDaysDelayed.value = delayedDays
     }
 
     fun addTask() {
+        val name = newTaskName.value?.trim() ?: ""
+        val tags = newTaskTags.value?.trim() ?: ""
+        val dueDate = newTaskDueDate.value?.trim() ?: ""
+        val datePostponed = newTaskDatePostponed.value?.trim() ?: ""
+        val description = newTaskDescription.value?.trim() ?: ""
+        val whyPushedOff = newTaskWhyPushedOff.value?.trim() ?: ""
+        val penalties = newTaskPenalties.value?.trim()?.ifBlank { "n/a" } ?: "n/a"
+        val dateCompleted = newTaskDateCompleted.value?.trim() ?: ""
+
+        if (name.isBlank() || dueDate.isBlank()) return
+
+        recalculateTaskStats()
+
+        val task = Task(
+            name = name,
+            tags = tags,
+            dueDate = dueDate,
+            datePostponed = datePostponed,
+            description = description,
+            whyTaskPushedOff = whyPushedOff,
+            penalties = penalties,
+            numDaysDelayed = newTaskNumDaysDelayed.value ?: "0",
+            overdueStatus = newTaskOverdueStatus.value ?: false,
+            dateCompleted = dateCompleted,
+            totalDeferrals = if (datePostponed.isNotBlank()) 1 else 0,
+            isCompleted = dateCompleted.isNotBlank()
+        )
+
         viewModelScope.launch {
-            val dueDateValue = newDueDate.value ?: ""
-            val postponedDateValue = newDatePostponed.value ?: ""
-
-            val calculatedDaysDelayed = calculateDelayedDays(dueDateValue, postponedDateValue)
-            val calculatedOverdue = calculateOverdueStatus(dueDateValue)
-
-            val task = Task(
-                name = newTaskName.value ?: "",
-                tags = newTags.value ?: "",
-                dueDate = dueDateValue,
-                datePostponed = postponedDateValue,
-                description = newDescription.value ?: "",
-                whyTaskPushedOff = newWhyTaskPushedOff.value ?: "",
-                penalties = newPenalties.value ?: "",
-                numDaysDelayed = calculatedDaysDelayed,
-                overdueStatus = calculatedOverdue,
-                dateCompleted = newDateCompleted.value ?: ""
-            )
-
             dao.insert(task)
-            clearFields()
         }
-    }
 
-    fun loadTask(taskId: Long) {
-        viewModelScope.launch {
-            val task = dao.getTaskById(taskId)
-            task?.let {
-                currentTaskId = it.taskId
-                newTaskName.postValue(it.name)
-                newTags.postValue(it.tags)
-                newDueDate.postValue(it.dueDate)
-                newDatePostponed.postValue(it.datePostponed)
-                newDescription.postValue(it.description)
-                newWhyTaskPushedOff.postValue(it.whyTaskPushedOff)
-                newPenalties.postValue(it.penalties)
-                newNumDaysDelayed.postValue(it.numDaysDelayed)
-                newOverdueStatus.postValue(it.overdueStatus)
-                newDateCompleted.postValue(it.dateCompleted)
-            }
-        }
+        clearTaskFields()
     }
 
     fun updateTask() {
-        val id = currentTaskId ?: return
+        val name = newTaskName.value?.trim() ?: ""
+        val tags = newTaskTags.value?.trim() ?: ""
+        val dueDate = newTaskDueDate.value?.trim() ?: ""
+        val datePostponed = newTaskDatePostponed.value?.trim() ?: ""
+        val description = newTaskDescription.value?.trim() ?: ""
+        val whyPushedOff = newTaskWhyPushedOff.value?.trim() ?: ""
+        val penalties = newTaskPenalties.value?.trim()?.ifBlank { "n/a" } ?: "n/a"
+        val dateCompleted = newTaskDateCompleted.value?.trim() ?: ""
+
+        if (name.isBlank() || dueDate.isBlank()) return
+
+        recalculateTaskStats()
+
+        val originalTask = allTasks.value?.find { it.taskId == currentTaskId }
+        val deferrals = originalTask?.totalDeferrals ?: if (datePostponed.isNotBlank()) 1 else 0
+
+        val updatedTask = Task(
+            taskId = currentTaskId,
+            name = name,
+            tags = tags,
+            dueDate = dueDate,
+            datePostponed = datePostponed,
+            description = description,
+            whyTaskPushedOff = whyPushedOff,
+            penalties = penalties,
+            numDaysDelayed = newTaskNumDaysDelayed.value ?: "0",
+            overdueStatus = newTaskOverdueStatus.value ?: false,
+            dateCompleted = dateCompleted,
+            totalDeferrals = deferrals,
+            isCompleted = dateCompleted.isNotBlank()
+        )
 
         viewModelScope.launch {
-            val dueDateValue = newDueDate.value ?: ""
-            val postponedDateValue = newDatePostponed.value ?: ""
+            dao.update(updatedTask)
+        }
+    }
 
-            val calculatedDaysDelayed = calculateDelayedDays(dueDateValue, postponedDateValue)
-            val calculatedOverdue = calculateOverdueStatus(dueDateValue)
+    fun updateTask(task: Task) {
+        val updatedTask = task.copy(
+            overdueStatus = calculateOverdue(task),
+            numDaysDelayed = calculateDelayedDaysString(task.dueDate),
+            isCompleted = task.dateCompleted.isNotBlank() || task.isCompleted
+        )
 
-            val updatedTask = Task(
-                taskId = id,
-                name = newTaskName.value ?: "",
-                tags = newTags.value ?: "",
-                dueDate = dueDateValue,
-                datePostponed = postponedDateValue,
-                description = newDescription.value ?: "",
-                whyTaskPushedOff = newWhyTaskPushedOff.value ?: "",
-                penalties = newPenalties.value ?: "",
-                numDaysDelayed = calculatedDaysDelayed,
-                overdueStatus = calculatedOverdue,
-                dateCompleted = newDateCompleted.value ?: ""
-            )
-
+        viewModelScope.launch {
             dao.update(updatedTask)
         }
     }
@@ -180,34 +255,269 @@ class TasksViewModel(val dao: TaskDao) : ViewModel() {
         }
     }
 
-    fun clearFields() {
-        currentTaskId = null
-        newTaskName.value = ""
-        newTags.value = ""
-        newDueDate.value = ""
-        newDatePostponed.value = ""
-        newDescription.value = ""
-        newWhyTaskPushedOff.value = ""
-        newPenalties.value = ""
-        newNumDaysDelayed.value = "0"
-        newOverdueStatus.value = false
-        newDateCompleted.value = ""
-    }
+    fun postponeTask(task: Task, newDueDate: String, postponedDate: String, reason: String = "") {
+        val updatedTask = task.copy(
+            dueDate = newDueDate,
+            datePostponed = postponedDate,
+            whyTaskPushedOff = if (reason.isBlank()) task.whyTaskPushedOff else reason,
+            totalDeferrals = task.totalDeferrals + 1,
+            overdueStatus = calculateOverdueFromString(newDueDate),
+            numDaysDelayed = calculateDelayedDaysString(newDueDate)
+        )
 
-    fun formatTasks(tasks: List<Task>): String {
-        return tasks.fold("") { str, item ->
-            str + '\n' + formatTask(item)
+        viewModelScope.launch {
+            dao.update(updatedTask)
         }
     }
 
-    fun formatTask(task: Task): String {
-        var str = "ID: ${task.taskId}"
-        str += '\n' + "Name: ${task.name}"
-        str += '\n' + "Tags: ${task.tags}"
-        str += '\n' + "Due Date: ${task.dueDate}"
-        str += '\n' + "Date Postponed: ${task.datePostponed}"
-        str += '\n' + "Days Delayed: ${task.numDaysDelayed}"
-        str += '\n' + "Overdue: ${if (task.overdueStatus) "Yes" else "No"}\n"
-        return str
+    fun markTaskCompleted(task: Task, completedDate: String) {
+        val updatedTask = task.copy(
+            dateCompleted = completedDate,
+            isCompleted = true,
+            overdueStatus = false
+        )
+
+        viewModelScope.launch {
+            dao.update(updatedTask)
+        }
+    }
+
+    fun markTaskIncomplete(task: Task) {
+        val updatedTask = task.copy(
+            dateCompleted = "",
+            isCompleted = false,
+            overdueStatus = calculateOverdue(task)
+        )
+
+        viewModelScope.launch {
+            dao.update(updatedTask)
+        }
+    }
+
+    fun refreshAllTaskStatuses() {
+        val tasks = allTasks.value ?: return
+
+        viewModelScope.launch {
+            tasks.forEach { task ->
+                val updatedTask = task.copy(
+                    overdueStatus = calculateOverdue(task),
+                    numDaysDelayed = calculateDelayedDaysString(task.dueDate)
+                )
+                dao.update(updatedTask)
+            }
+        }
+    }
+
+    // =========================================
+    // ANALYTICS
+    // =========================================
+    val postponedTaskCount = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.count { it.totalDeferrals > 0 }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val totalDeferrals = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.sumOf { it.totalDeferrals }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val overdueTaskCount = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.count { calculateOverdue(it) && !it.isCompleted }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val overdueCount = overdueTaskCount
+
+    val completedTaskCount = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.count { it.isCompleted }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val incompleteTaskCount = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.count { !it.isCompleted }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val averageDelay = MediatorLiveData<Double>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            val validDelays = tasks.mapNotNull { it.numDaysDelayed.toDoubleOrNull() }
+            value = if (validDelays.isEmpty()) 0.0 else validDelays.average()
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val mostDeferredTask = MediatorLiveData<Task?>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.maxByOrNull { it.totalDeferrals }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val mostDeferredTaskName = MediatorLiveData<String>().apply {
+        fun update() {
+            value = mostDeferredTask.value?.name ?: "None"
+        }
+        addSource(mostDeferredTask) { update() }
+    }
+
+    val mostDeferredTaskDeferrals = MediatorLiveData<Int>().apply {
+        fun update() {
+            value = mostDeferredTask.value?.totalDeferrals ?: 0
+        }
+        addSource(mostDeferredTask) { update() }
+    }
+
+    val futureBurdenScore = MediatorLiveData<Int>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks.sumOf { task ->
+                val overdueWeight = if (calculateOverdue(task) && !task.isCompleted) 3 else 0
+                val deferralWeight = task.totalDeferrals * 2
+                val delayWeight = task.numDaysDelayed.toIntOrNull() ?: 0
+                overdueWeight + deferralWeight + delayWeight
+            }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val weeklyAverageDelay = MediatorLiveData<List<Float>>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = listOf(
+                averageDelayForDay(tasks, 0),
+                averageDelayForDay(tasks, 1),
+                averageDelayForDay(tasks, 2),
+                averageDelayForDay(tasks, 3),
+                averageDelayForDay(tasks, 4),
+                averageDelayForDay(tasks, 5),
+                averageDelayForDay(tasks, 6)
+            )
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val procrastinationBreakdown = MediatorLiveData<Map<String, Int>>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = mapOf(
+                "Overdue" to tasks.count { calculateOverdue(it) && !it.isCompleted },
+                "Completed" to tasks.count { it.isCompleted },
+                "Deferred" to tasks.count { it.totalDeferrals > 0 },
+                "On Time" to tasks.count { !calculateOverdue(it) && !it.isCompleted }
+            )
+        }
+        addSource(allTasks) { update() }
+    }
+
+    val overdueByTag = MediatorLiveData<Map<String, Int>>().apply {
+        fun update() {
+            val tasks = allTasks.value ?: emptyList()
+            value = tasks
+                .filter { calculateOverdue(it) && !it.isCompleted }
+                .groupBy { if (it.tags.isBlank()) "No Tag" else it.tags }
+                .mapValues { entry -> entry.value.size }
+        }
+        addSource(allTasks) { update() }
+    }
+
+    // =========================================
+    // HELPERS
+    // =========================================
+    private fun clearTaskFields() {
+        currentTaskId = 0L
+        newTaskName.value = ""
+        newTaskTags.value = ""
+        newTaskDueDate.value = ""
+        newTaskDatePostponed.value = ""
+        newTaskDescription.value = ""
+        newTaskWhyPushedOff.value = ""
+        newTaskPenalties.value = "n/a"
+        newTaskDateCompleted.value = ""
+        newTaskNumDaysDelayed.value = "0"
+        newTaskOverdueStatus.value = false
+    }
+
+    private fun calculateOverdue(task: Task): Boolean {
+        if (task.isCompleted) return false
+        return calculateOverdueFromString(task.dueDate)
+    }
+
+    private fun calculateOverdueFromString(dueDate: String): Boolean {
+        val due = parseDate(dueDate) ?: return false
+        return stripTime(due).before(stripTime(Date()))
+    }
+
+    private fun calculateDelayedDaysString(dueDate: String): String {
+        val due = parseDate(dueDate) ?: return "0"
+        val today = stripTime(Date())
+        val cleanDue = stripTime(due)
+
+        val diffMillis = today.time - cleanDue.time
+        val diffDays = TimeUnit.MILLISECONDS.toDays(diffMillis)
+
+        return if (diffDays > 0) diffDays.toString() else "0"
+    }
+
+    private fun averageDelayForDay(tasks: List<Task>, dayIndex: Int): Float {
+        val filtered = tasks.filter { task ->
+            val postponedDate = parseDate(task.datePostponed) ?: return@filter false
+            val calendar = Calendar.getInstance()
+            calendar.time = postponedDate
+
+            val mappedDay = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+                Calendar.MONDAY -> 0
+                Calendar.TUESDAY -> 1
+                Calendar.WEDNESDAY -> 2
+                Calendar.THURSDAY -> 3
+                Calendar.FRIDAY -> 4
+                Calendar.SATURDAY -> 5
+                else -> 6
+            }
+
+            mappedDay == dayIndex
+        }
+
+        val delays = filtered.mapNotNull { it.numDaysDelayed.toFloatOrNull() }
+        return if (delays.isEmpty()) 0f else delays.average().toFloat()
+    }
+
+    private fun stripTime(date: Date): Date {
+        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return formatter.parse(formatter.format(date)) ?: date
+    }
+
+    private fun parseDate(dateString: String): Date? {
+        val formats = listOf(
+            "MM/dd/yyyy",
+            "M/d/yyyy",
+            "yyyy-MM-dd"
+        )
+
+        for (format in formats) {
+            try {
+                val sdf = SimpleDateFormat(format, Locale.getDefault())
+                sdf.isLenient = false
+                return sdf.parse(dateString)
+            } catch (_: Exception) {
+            }
+        }
+        return null
     }
 }

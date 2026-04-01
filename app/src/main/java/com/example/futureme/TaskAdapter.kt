@@ -7,33 +7,15 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.futureme.databinding.ItemTaskBinding
 
-// Adapter for showing tasks in a RecyclerView
-class TaskAdapter(
-    private val onEditClick: (Task) -> Unit,
-    private val onDeleteClick: (Task) -> Unit
-) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
+class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
-    // ViewHolder holds one row/item of the RecyclerView
     class TaskViewHolder(private val binding: ItemTaskBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(
-            task: Task,
-            onEditClick: (Task) -> Unit,
-            onDeleteClick: (Task) -> Unit
-        ) {
-            binding.taskTitle.text = task.name
-            binding.taskTag.text = "Tag: ${task.tags}"
-            binding.taskDueDate.text = "Due: ${task.dueDate}"
-
-            binding.editButton.setOnClickListener {
-                onEditClick(task)
-            }
-
-            binding.deleteButton.setOnClickListener {
-                onDeleteClick(task)
-            }
-
+        fun bind(task: Task) {
+            binding.taskNameText.text = task.name
+            binding.taskTagText.text = "Tag: ${task.tags}"
+            binding.taskDueDateText.text = "Due: ${task.dueDate}"
         }
     }
 
@@ -47,12 +29,10 @@ class TaskAdapter(
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        val currentTask = getItem(position)
-        holder.bind(currentTask, onEditClick, onDeleteClick)
+        holder.bind(getItem(position))
     }
 }
 
-// Helps RecyclerView know what changed
 class TaskDiffCallback : DiffUtil.ItemCallback<Task>() {
     override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
         return oldItem.taskId == newItem.taskId
