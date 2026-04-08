@@ -43,13 +43,19 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <!-- TASK LIST -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/taskRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="10dp" />
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:background="#F3E8FF">
+        <!-- TASK LIST -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/taskRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="10dp" />
+    </ScrollView>
     </LinearLayout>
 </layout>

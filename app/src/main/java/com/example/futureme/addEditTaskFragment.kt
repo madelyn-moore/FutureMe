@@ -1,11 +1,14 @@
 package com.example.futureme
 
+import android.R
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -28,8 +31,10 @@ class AddEditTaskFragment : Fragment() {
         _binding = FragmentAddEditTaskBinding.inflate(inflater, container, false)
 
         val application = requireNotNull(activity).application
+        val database = TaskDatabase.getInstance(application)
         val dao = TaskDatabase.getInstance(application).taskDao
-        val viewModelFactory = TasksViewModelFactory(dao)
+        val tagDao = TaskDatabase.getInstance(application).tagDao
+        val viewModelFactory = TasksViewModelFactory(database.taskDao, database.tagDao)
         viewModel = ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
 
         binding.viewModel = viewModel
@@ -38,6 +43,8 @@ class AddEditTaskFragment : Fragment() {
         setupDateRecalculation()
         loadTaskFromArgsIfNeeded()
         setupButtons()
+        setUpSpinner()
+
 
         return binding.root
     }
@@ -79,17 +86,26 @@ class AddEditTaskFragment : Fragment() {
             val datePostponed = viewModel.newTaskDatePostponed.value?.trim().orEmpty()
 
             if (dueDate.isBlank() || !isValidOrBlankDate(dueDate)) {
-                Toast.makeText(requireContext(), "Enter due date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Enter due date as MM/dd/yyyy", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
             if (!isValidOrBlankDate(dateCompleted)) {
-                Toast.makeText(requireContext(), "Enter completed date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Enter completed date as MM/dd/yyyy",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
             if (!isValidOrBlankDate(datePostponed)) {
-                Toast.makeText(requireContext(), "Enter postponed date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Enter postponed date as MM/dd/yyyy",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
 
@@ -125,5 +141,30 @@ class AddEditTaskFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    // set up spinner
+    private fun setUpSpinner() {
+        viewModel.allTags.observe(viewLifecycleOwner)
+        { tags ->
+            val adapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, tags)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.tagSpinner.adapter = adapter
+        }
+        binding.tagSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val selectedTag = parent?.getItemAtPosition(position) as? Tag
+                viewModel.selectedTag.value = selectedTag
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                viewModel.selectedTag.value = null
+            }
+        }
     }
 }

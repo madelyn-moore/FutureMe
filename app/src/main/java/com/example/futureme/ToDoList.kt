@@ -8,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.futureme.databinding.FragmentToDoListBinding
 
@@ -30,7 +32,8 @@ class ToDoListFragment : Fragment() {
 
         val application = requireNotNull(activity).application
         val dao = TaskDatabase.getInstance(application).taskDao
-        val factory = TasksViewModelFactory(dao)
+        val tagDao = TaskDatabase.getInstance(application).tagDao
+        val factory = TasksViewModelFactory(dao, tagDao)
         viewModel = ViewModelProvider(this, factory)[TasksViewModel::class.java]
 
         binding.viewModel = viewModel
@@ -44,7 +47,11 @@ class ToDoListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = TaskAdapter()
+        adapter = TaskAdapter { taskId ->
+            // FIX: Changed "taskID" to "taskId" to match TaskViewFragment's expected key
+            val bundle = bundleOf("taskId" to taskId)
+            findNavController().navigate(R.id.action_toDoList_to_taskView, bundle)
+        }
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.taskRecyclerView.adapter = adapter
 

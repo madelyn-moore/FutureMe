@@ -7,15 +7,26 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.futureme.databinding.ItemTaskBinding
 
-class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
+// Takes the val on task clicked and takes a long aka task id and returns a unit aka nothing
+class TaskAdapter(private val onTaskClicked: (Long) -> Unit) : ListAdapter<Task, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     class TaskViewHolder(private val binding: ItemTaskBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(task: Task) {
+        fun bind(task: Task, onTaskClicked: (Long) -> Unit) {
             binding.taskNameText.text = task.name
-            binding.taskTagText.text = "Tag: ${task.tags}"
+            binding.taskTagText.text = if (task.tags.isNullOrBlank()) "Tag: None" else "Tag: ${task.tags}"
             binding.taskDueDateText.text = "Due: ${task.dueDate}"
+
+            // set the checkboxes up
+            binding.taskCheckBox.setOnCheckedChangeListener(null)
+            binding.taskCheckBox.isChecked = task.isCompleted
+
+            
+            // Set the click listener on the entire card on the to do list
+            binding.root.setOnClickListener {
+                onTaskClicked(task.taskId)
+            }
         }
     }
 
@@ -29,7 +40,7 @@ class TaskAdapter : ListAdapter<Task, TaskAdapter.TaskViewHolder>(TaskDiffCallba
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onTaskClicked)
     }
 }
 

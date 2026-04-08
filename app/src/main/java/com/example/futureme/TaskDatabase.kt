@@ -5,9 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Task::class], version = 2, exportSchema = false)
+// Added Tag::class to the entities list and incremented version to 3
+@Database(entities = [Task::class, Tag::class], version = 3, exportSchema = false)
 abstract class TaskDatabase : RoomDatabase() {
     abstract val taskDao: TaskDao
+    abstract val tagDao: TagDAO // Added the TagDAO
 
     companion object {
         @Volatile

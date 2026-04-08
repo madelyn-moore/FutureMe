@@ -1,63 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".TaskView">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <!-- TODO: Update the Data Binding -->
         <variable
             name="viewModel"
             type="com.example.futureme.TasksViewModel" />
     </data>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        tools:context=".TaskViewFragment">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
                 <!--Task name-->
                 <TextView
                     android:id="@+id/taskName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:maxWidth="120dp"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginEnd="12dp"
                     android:textStyle="bold"
                     android:textSize="24sp"
                     android:textColor="@color/black"
-                    android:text="Task Name" />
+                    android:text="@{viewModel.newTaskName}" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:minWidth="120dp">
+                    android:layout_weight="1">
 
                     <!--New due date title-->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
+                        android:text="Due Date (MM/dd/yyyy):"
                         android:textColor="@color/black"
-                        android:text="New Due Date:" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <!--New due date output-->
                     <TextView
                         android:id="@+id/newDueDate"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:textStyle="normal"
                         android:textSize="16sp"
                         android:textColor="@color/black"
-                        android:text="2/34/25" />
+                        android:text="@{viewModel.newTaskDueDate}" />
 
                 </LinearLayout>
         </LinearLayout>
@@ -65,44 +68,62 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
 
             <!--Tags-->
-            <TextView
-                android:id="@+id/tags"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textStyle="normal"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:text="Tags"/>
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:minWidth="120dp">
+                    android:text="Tags:"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:textStyle="normal"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    android:text="@{viewModel.newTaskTags}" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <!--Date Postponed title-->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
+                        android:text="Date Postponed (MM/dd/yyyy):"
                         android:textColor="@color/black"
-                        android:text="Date Postponed:" />
+                        android:textSize="16sp"
+                        android:textStyle="bold"  />
 
                     <!--Date Postponed output-->
                     <TextView
                         android:id="@+id/datPostponed"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:textStyle="normal"
                         android:textSize="16sp"
                         android:textColor="@color/black"
-                        android:text="2/34/25" />
+                        android:text="@{viewModel.newTaskDatePostponed}" />
 
                 </LinearLayout>
 
@@ -112,11 +133,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                android:text="Description:"
                 android:textColor="@color/black"
-                android:text="Description:" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <!--Description output-->
             <TextView
@@ -127,17 +147,16 @@
                 android:textStyle="normal"
                 android:textSize="16sp"
                 android:textColor="@color/black"
-                android:text="Description goes here..." />
+                android:text="@{viewModel.newTaskDescription}" />
 
             <!--Why task was pushed off title-->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                android:text="Why task was pushed off:"
                 android:textColor="@color/black"
-                android:text="Why task was pushed off" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <!--Why task was pushed off output-->
             <TextView
@@ -148,17 +167,16 @@
                 android:textStyle="normal"
                 android:textSize="16sp"
                 android:textColor="@color/black"
-                android:text="n/a" />
+                android:text="@{viewModel.newTaskWhyPushedOff}" />
 
             <!--Penalties title-->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                android:text="Penalties for pushing off task (if any):"
                 android:textColor="@color/black"
-                android:text="Penalties for pushing off task (if any):" />
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <!--Penalties output-->
             <TextView
@@ -169,19 +187,20 @@
                 android:textStyle="normal"
                 android:textSize="16sp"
                 android:textColor="@color/black"
-                android:text="n/a" />
+                android:text="@{viewModel.newTaskPenalties}" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_weight="1">
+                    android:layout_marginBottom="12dp">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_weight="1">
+                        android:layout_marginEnd="12dp">
 
                         <!--Total of delays title-->
                         <TextView
@@ -197,35 +216,43 @@
                             android:id="@+id/numDaysDelayed"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:textStyle="normal"
                             android:textSize="16sp"
                             android:textColor="@color/black"
-                            android:text="n/a" />
+                            android:text="@{viewModel.newTaskNumDaysDelayed}" />
                     </LinearLayout>
 
                     <!--Overdue output-->
-                    <TextView
-                        android:id="@+id/overdueStatus"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:textColor="@color/black"
-                        android:text="Overdue"/>
+                        android:orientation="vertical">
+
+                        <!-- Checkbox for overdue status -->
+                        <CheckBox
+                            android:id="@+id/overdueStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="@{viewModel.newOverdueStatus}"
+                            android:enabled="false"
+                            android:text="Overdue"
+                            android:textColor="@color/black"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
 
                     <!--Date completed by title-->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0"
                         android:layout_gravity="center_vertical"
                         android:textStyle="bold"
                         android:textSize="16sp"
@@ -235,19 +262,21 @@
                     <!--Date completed by output-->
                     <TextView
                         android:id="@+id/dateCompleted"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0"
+                        android:layout_weight="1"
                         android:layout_gravity="center_vertical"
+                        android:layout_marginStart="8dp"
                         android:textStyle="normal"
                         android:textSize="16sp"
                         android:textColor="@color/black"
-                        android:text="2/34/25"/>
+                        android:text="@{viewModel.newTaskDateCompleted}"/>
+                    </LinearLayout>
+
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"
                         android:orientation="horizontal">
 
                         <!--Edit Button-->
@@ -271,5 +300,5 @@
 
                     </LinearLayout>
                 </LinearLayout>
-        </LinearLayout>
+    </ScrollView>
 </layout>

@@ -45,6 +45,7 @@
         app:itemTextColor="@color/text_dark"
         app:itemIconTint="@color/purple_primary"
         app:itemRippleColor="@color/purple_light_bg"
-        app:menu="@menu/burger_menu" />
+        app:menu="@menu/burger_menu"
+        app:headerLayout="@layout/burger_header" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

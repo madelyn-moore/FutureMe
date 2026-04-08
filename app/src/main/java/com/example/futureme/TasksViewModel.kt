@@ -12,12 +12,13 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class TasksViewModel(private val dao: TaskDao) : ViewModel() {
+class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : ViewModel() {
 
     // =========================================
     // DATABASE
     // =========================================
     val allTasks: LiveData<List<Task>> = dao.getAllTasks()
+    val allTags: LiveData<List<Tag>> = tagDao.getAllTags()
 
     private var currentTaskId: Long = 0L
 
@@ -34,6 +35,10 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
     val newTaskDateCompleted = MutableLiveData("")
     val newTaskNumDaysDelayed = MutableLiveData("0")
     val newTaskOverdueStatus = MutableLiveData(false)
+
+    // Tag Selection
+    val selectedTag = MutableLiveData<Tag?>(null)
+    val tagNameInput = MutableLiveData("")
 
     // =========================================
     // XML BINDING ALIASES
@@ -150,6 +155,9 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
         newTaskDateCompleted.value = task.dateCompleted
         newTaskNumDaysDelayed.value = task.numDaysDelayed
         newTaskOverdueStatus.value = task.overdueStatus
+        
+        // Try to match tag in spinner
+        selectedTag.value = allTags.value?.find { it.tagName == task.tags }
     }
 
     fun recalculateTaskStats() {
@@ -165,7 +173,8 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
 
     fun addTask() {
         val name = newTaskName.value?.trim() ?: ""
-        val tags = newTaskTags.value?.trim() ?: ""
+        // Crucial fix: Pull tag name from selectedTag
+        val tags = selectedTag.value?.tagName ?: ""
         val dueDate = newTaskDueDate.value?.trim() ?: ""
         val datePostponed = newTaskDatePostponed.value?.trim() ?: ""
         val description = newTaskDescription.value?.trim() ?: ""
@@ -201,7 +210,7 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
 
     fun updateTask() {
         val name = newTaskName.value?.trim() ?: ""
-        val tags = newTaskTags.value?.trim() ?: ""
+        val tags = selectedTag.value?.tagName ?: ""
         val dueDate = newTaskDueDate.value?.trim() ?: ""
         val datePostponed = newTaskDatePostponed.value?.trim() ?: ""
         val description = newTaskDescription.value?.trim() ?: ""
@@ -452,6 +461,7 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
         newTaskDateCompleted.value = ""
         newTaskNumDaysDelayed.value = "0"
         newTaskOverdueStatus.value = false
+        selectedTag.value = null
     }
 
     private fun calculateOverdue(task: Task): Boolean {
@@ -519,5 +529,25 @@ class TasksViewModel(private val dao: TaskDao) : ViewModel() {
             }
         }
         return null
+    }
+
+    // =========================================
+    // Tags
+    // =========================================
+    fun addTag() {
+        val name = tagNameInput.value?.trim() ?: ""
+        if (name.isNotEmpty()) {
+            viewModelScope.launch {
+                tagDao.insert(Tag(tagName = name))
+                tagNameInput.value = ""
+            }
+        }
+    }
+
+    val tagTOBeDeleted = MutableLiveData<Tag?>(null)
+    fun deleteTag(tag: Tag) {
+        viewModelScope.launch {
+            tagDao.delete(tag)
+        }
     }
 }

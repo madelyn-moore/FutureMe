@@ -3,24 +3,54 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:background="@drawable/analytic_card"
+    android:padding="14dp">
 
-    <TextView
-        android:id="@+id/taskNameText"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="18sp" />
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/taskTagText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp" />
+        <CheckBox
+            android:id="@+id/taskCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="6dp"
+            android:checked="false" />
 
-    <TextView
-        android:id="@+id/taskDueDateText"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/taskNameText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/taskTagText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/taskDueDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="end"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.futureme.databinding.FragmentSettingsBinding
 
 class SettingsFragment : Fragment() {
@@ -48,7 +49,17 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        // sets up the add tag button for navigation
+        setupTagButton()
+
+
         return binding.root
+    }
+
+    private fun setupTagButton(){
+        binding.addTagButton.setOnClickListener {
+            findNavController().navigate(R.id.action_settings_to_addTags)
+        }
     }
 
     override fun onDestroyView() {

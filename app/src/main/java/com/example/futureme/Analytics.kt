@@ -40,9 +40,11 @@ class AnalyticsFragment : Fragment() {
         // Get the DAO from the Room database
         val application = requireNotNull(activity).application
         val dao = TaskDatabase.getInstance(application).taskDao
+        val tagDao = TaskDatabase.getInstance(application).tagDao
+
 
         // Build the ViewModel using the factory
-        val viewModelFactory = TasksViewModelFactory(dao)
+        val viewModelFactory = TasksViewModelFactory(dao, tagDao)
         viewModel = ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
 
         // Attach ViewModel to XML for data binding
