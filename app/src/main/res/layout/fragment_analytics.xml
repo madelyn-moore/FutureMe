@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
         <variable
@@ -7,11 +8,12 @@
             type="com.example.futureme.TasksViewModel" />
     </data>
 
+    <!-- Scroll view-->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:background="#F3E8FF">
+        android:background="?android:attr/windowBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,17 +21,17 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Page title -->
+            <!-- Future me titles-->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="FutureMe Analytics"
+                android:text="@string/futureme_analytics"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="#6200EE"
+                android:textColor="?attr/colorPrimary"
                 android:paddingBottom="12dp" />
 
-            <!-- Always-visible summary section -->
+            <!-- Summary section -->
             <LinearLayout
                 android:id="@+id/summaryContent"
                 android:layout_width="match_parent"
@@ -39,62 +41,69 @@
                 android:background="@drawable/analytic_card"
                 android:layout_marginBottom="16dp">
 
+                <!-- Productivity summary content-->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Productivity Summary"
+                    android:text="@string/productivity_summary"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#6200EE"
+                    android:textColor="?attr/colorPrimary"
                     android:paddingBottom="10dp" />
 
+                <!-- Task postponed content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text='@{"Tasks Postponed: " + viewModel.postponedTaskCount}'
                     android:textSize="18sp"
-                    android:textColor="#1F1B24"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="8dp" />
 
+                <!-- Total deferrals content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text='@{"Total Deferrals: " + viewModel.totalDeferrals}'
                     android:textSize="18sp"
-                    android:textColor="#1F1B24"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="8dp" />
 
+                <!-- Additional summary content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text='@{"Average Delay (Days): " + viewModel.averageDelay}'
                     android:textSize="18sp"
-                    android:textColor="#1F1B24"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="8dp" />
 
+                <!-- Overdue tasks content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text='@{"Overdue Tasks: " + viewModel.overdueCount}'
                     android:textSize="18sp"
-                    android:textColor="#1F1B24"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="8dp" />
 
+                <!-- Completed tasks content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text='@{"Most Deferred Task: " + viewModel.mostDeferredTaskName}'
                     android:textSize="18sp"
-                    android:textColor="#1F1B24"
+                    android:textColor="?attr/colorOnSurface"
                     android:paddingBottom="8dp" />
 
+                <!-- Future burden score content -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text='@{"Future Burden Score: " + viewModel.futureBurdenScore}'
+                    android:text='@{"Burden Score: " + viewModel.futureBurdenScore}'
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#6200EE" />
+                    android:textColor="?attr/colorPrimary" />
             </LinearLayout>
 
             <!-- Weekly delay section header -->
@@ -102,12 +111,12 @@
                 android:id="@+id/weeklyHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Weekly Delay Trends"
+                android:text="@string/weekly_delay_trends"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnPrimary"
                 android:padding="14dp"
-                android:background="#6200EE" />
+                android:background="?attr/colorPrimary" />
 
             <!-- Weekly delay section content -->
             <LinearLayout
@@ -115,9 +124,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone"
                 android:padding="12dp"
                 android:background="@drawable/analytic_card"
+                android:visibility="gone"
                 android:layout_marginBottom="12dp">
 
                 <com.github.mikephil.charting.charts.LineChart
@@ -131,12 +140,12 @@
                 android:id="@+id/statusHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Task Behavior Breakdown"
+                android:text="@string/task_behavior_breakdown"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnPrimary"
                 android:padding="14dp"
-                android:background="#6200EE"
+                android:background="?attr/colorPrimary"
                 android:layout_marginTop="4dp" />
 
             <!-- Donut chart section content -->
@@ -145,9 +154,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone"
                 android:padding="12dp"
                 android:background="@drawable/analytic_card"
+                android:visibility="gone"
                 android:layout_marginBottom="12dp">
 
                 <com.github.mikephil.charting.charts.PieChart
@@ -161,12 +170,12 @@
                 android:id="@+id/tagHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Overdue Tasks by Tag"
+                android:text="@string/overdue_tasks_by_tag"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="?attr/colorOnPrimary"
                 android:padding="14dp"
-                android:background="#6200EE"
+                android:background="?attr/colorPrimary"
                 android:layout_marginTop="4dp" />
 
             <!-- Bar chart section content -->
@@ -175,9 +184,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone"
                 android:padding="12dp"
                 android:background="@drawable/analytic_card"
+                android:visibility="gone"
                 android:layout_marginBottom="12dp">
 
                 <com.github.mikephil.charting.charts.BarChart

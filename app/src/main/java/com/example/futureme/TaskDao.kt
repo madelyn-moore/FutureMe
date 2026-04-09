@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.Update
 import androidx.room.Query
 
+// Task entity
 @Dao
 interface TaskDao {
         @Insert

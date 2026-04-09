@@ -13,16 +13,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/purple_light_bg">
+        android:background="?android:attr/windowBackground">
 
         <!-- Toolbar -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/purple_primary"
-            app:titleTextColor="@color/white"
-            app:navigationIconTint="@color/white" />
+            android:background="?attr/colorPrimary"
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:navigationIconTint="?attr/colorOnPrimary" />
 
         <!-- Nav Host -->
         <androidx.fragment.app.FragmentContainerView
@@ -41,10 +41,9 @@
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/white"
-        app:itemTextColor="@color/text_dark"
-        app:itemIconTint="@color/purple_primary"
-        app:itemRippleColor="@color/purple_light_bg"
+        android:background="?attr/colorSurface"
+        app:itemTextColor="?attr/colorOnSurface"
+        app:itemIconTint="?attr/colorPrimary"
         app:menu="@menu/burger_menu"
         app:headerLayout="@layout/burger_header" />
 

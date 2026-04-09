@@ -3,13 +3,11 @@ package com.example.futureme
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.example.futureme.databinding.ActivityMainBinding
@@ -28,17 +26,24 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
 
+        // Set up toolbar
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
+        // Set up navigation
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
+        // Set up drawer
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        // Set up app bar configuration
         val appBarConfiguration = AppBarConfiguration(navController.graph, drawer)
 
+        // Set up toolbar with navigation
         toolbar.setupWithNavController(navController, appBarConfiguration)
 
+        // Set up navigation drawer with navigation
         val navView = findViewById<NavigationView>(R.id.nav_view)
         navView.setupWithNavController(navController)
     }

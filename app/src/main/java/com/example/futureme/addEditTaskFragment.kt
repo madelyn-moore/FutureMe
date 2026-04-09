@@ -1,6 +1,5 @@
 package com.example.futureme
 
-import android.R
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -17,6 +16,7 @@ import com.example.futureme.databinding.FragmentAddEditTaskBinding
 
 class AddEditTaskFragment : Fragment() {
 
+    // Variables
     private var _binding: FragmentAddEditTaskBinding? = null
     private val binding get() = _binding!!
 
@@ -30,10 +30,9 @@ class AddEditTaskFragment : Fragment() {
     ): View {
         _binding = FragmentAddEditTaskBinding.inflate(inflater, container, false)
 
+        // database code
         val application = requireNotNull(activity).application
         val database = TaskDatabase.getInstance(application)
-        val dao = TaskDatabase.getInstance(application).taskDao
-        val tagDao = TaskDatabase.getInstance(application).tagDao
         val viewModelFactory = TasksViewModelFactory(database.taskDao, database.tagDao)
         viewModel = ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
 
@@ -45,10 +44,10 @@ class AddEditTaskFragment : Fragment() {
         setupButtons()
         setUpSpinner()
 
-
         return binding.root
     }
 
+    // Date recalculation for our database
     private fun setupDateRecalculation() {
         val watcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -65,6 +64,7 @@ class AddEditTaskFragment : Fragment() {
         binding.datePostponed.addTextChangedListener(watcher)
     }
 
+    // Load task from arguments if available
     private fun loadTaskFromArgsIfNeeded() {
         val args = arguments ?: return
         val taskId = args.getLong("taskId", -1L)
@@ -79,6 +79,7 @@ class AddEditTaskFragment : Fragment() {
         }
     }
 
+    // Button set up for save and delete
     private fun setupButtons() {
         binding.saveButton.setOnClickListener {
             val dueDate = viewModel.newTaskDueDate.value?.trim().orEmpty()
@@ -86,26 +87,17 @@ class AddEditTaskFragment : Fragment() {
             val datePostponed = viewModel.newTaskDatePostponed.value?.trim().orEmpty()
 
             if (dueDate.isBlank() || !isValidOrBlankDate(dueDate)) {
-                Toast.makeText(requireContext(), "Enter due date as MM/dd/yyyy", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Enter due date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (!isValidOrBlankDate(dateCompleted)) {
-                Toast.makeText(
-                    requireContext(),
-                    "Enter completed date as MM/dd/yyyy",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Enter completed date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             if (!isValidOrBlankDate(datePostponed)) {
-                Toast.makeText(
-                    requireContext(),
-                    "Enter postponed date as MM/dd/yyyy",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Enter postponed date as MM/dd/yyyy", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -132,6 +124,7 @@ class AddEditTaskFragment : Fragment() {
         }
     }
 
+    // Date validation
     private fun isValidOrBlankDate(date: String): Boolean {
         if (date.isBlank()) return true
         val regex = Regex("""^(0?[1-9]|1[0-2])/(0?[1-9]|[12]\d|3[01])/\d{4}$""")
@@ -143,21 +136,16 @@ class AddEditTaskFragment : Fragment() {
         _binding = null
     }
 
-    // set up spinner
+    // set up spinner for tags
     private fun setUpSpinner() {
-        viewModel.allTags.observe(viewLifecycleOwner)
-        { tags ->
-            val adapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, tags)
+        viewModel.allTags.observe(viewLifecycleOwner) { tags ->
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             binding.tagSpinner.adapter = adapter
         }
+        
         binding.tagSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val selectedTag = parent?.getItemAtPosition(position) as? Tag
                 viewModel.selectedTag.value = selectedTag
             }

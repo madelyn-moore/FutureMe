@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Menu set up for app bar adds the add task button -->
     <item
         android:id="@+id/addEditTask"
         android:icon="@android:drawable/ic_menu_add"
-        android:title="Add Task"
+        android:title="@string/add_task"
         app:showAsAction="always" />
 
 </menu>

@@ -5,12 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.futureme.databinding.FragmentAddTagsBinding
 
 class AddTags : Fragment() {
 
+    // Variables
     private var _binding: FragmentAddTagsBinding? = null
     private val binding get() = _binding!!
 
@@ -24,6 +26,7 @@ class AddTags : Fragment() {
     ): View {
         _binding = FragmentAddTagsBinding.inflate(inflater, container, false)
 
+        // Database code
         val application = requireNotNull(activity).application
         val database = TaskDatabase.getInstance(application)
         val factory = TasksViewModelFactory(database.taskDao, database.tagDao)
@@ -37,9 +40,11 @@ class AddTags : Fragment() {
         return binding.root
     }
 
+    // tag recycler view
     private fun setUpTagRecyclerView() {
         adapter = TagsAdapter { tagToDelete ->
-            viewModel.deleteTag(tagToDelete)
+            viewModel.deleteTag(tagToDelete) // Calls to database to be able to delete tags
+            Toast.makeText(requireContext(), "Tag deleted", Toast.LENGTH_SHORT).show()
         }
         binding.tagsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.tagsRecyclerView.adapter = adapter

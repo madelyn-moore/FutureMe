@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.Update
 import androidx.room.Query
 
 
+// Tag entity
 @Dao
 interface TagDAO {
     @Query("SELECT * from tags_table ORDER BY tag_name ASC")

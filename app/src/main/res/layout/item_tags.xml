@@ -5,19 +5,23 @@
     android:orientation="vertical"
     android:padding="12dp">
 
+    <!-- Layout for tag recycler -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!-- Tag name text view-->
         <TextView
             android:id="@+id/tagNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textStyle="bold"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:textColor="?attr/colorOnSurface"/>
 
+        <!-- Delete button for tags -->
         <Button
             android:id="@+id/tagsDeleteButton"
             android:layout_width="wrap_content"
@@ -25,7 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:layout_marginTop="4dp"
-            android:text="Delete" />
+            android:text="@string/delete"
+            android:textColor="?attr/colorOnSurface"/>
 
     </LinearLayout>
 

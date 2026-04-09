@@ -60,6 +60,7 @@ class AnalyticsFragment : Fragment() {
         return binding.root
     }
 
+    // Set up tap to expand sections
     private fun setupExpandableSections() {
         // Toggle weekly delay section
         binding.weeklyHeader.setOnClickListener {
@@ -77,11 +78,13 @@ class AnalyticsFragment : Fragment() {
         }
     }
 
+    // Toggle a section's visibility
     private fun toggleSection(view: View) {
         // Show the section if hidden, hide it if visible
         view.visibility = if (view.visibility == View.VISIBLE) View.GONE else View.VISIBLE
     }
 
+    // Observe analytics data and update charts
     private fun observeCharts() {
         // Observe weekly average delay data
         viewModel.weeklyAverageDelay.observe(viewLifecycleOwner) { values ->
@@ -99,6 +102,7 @@ class AnalyticsFragment : Fragment() {
         }
     }
 
+    // Update the weekly line chart with new data
     private fun updateWeeklyLineChart(values: List<Float>) {
         val labels = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
@@ -154,6 +158,7 @@ class AnalyticsFragment : Fragment() {
         binding.weeklyLineChart.invalidate()
     }
 
+    // Update the donut chart with new data
     private fun updateDonutChart(breakdown: Map<String, Int>) {
         val entries = breakdown.mapNotNull { (label, value) ->
             if (value > 0) PieEntry(value.toFloat(), label) else null
@@ -203,6 +208,7 @@ class AnalyticsFragment : Fragment() {
         binding.statusDonutChart.invalidate()
     }
 
+    // Update the bar chart with new data
     private fun updateTagBarChart(tagMap: Map<String, Int>) {
         // If there is no data, show message
         if (tagMap.isEmpty()) {

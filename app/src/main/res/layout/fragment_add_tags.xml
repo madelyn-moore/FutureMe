@@ -9,12 +9,12 @@
             type="com.example.futureme.TasksViewModel" />
     </data>
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
+        android:background="?android:attr/windowBackground"
         tools:context=".AddTags">
 
         <LinearLayout
@@ -23,48 +23,47 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- Edit text for input of new tags -->
             <EditText
                 android:id="@+id/newTagEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Enter a new tag"
+                android:hint="@string/enter_a_new_tag"
                 android:text="@={viewModel.tagNameInput}"
                 android:textSize="18sp"
-                android:textColor="@color/black"/>
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurface" />
 
+            <!-- Button to add new tags -->
+            <!-- on click attribute to call add tag fun -->
             <Button
                 android:id="@+id/addTagButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add"
+                android:text="@string/add"
                 android:onClick="@{() -> viewModel.addTag()}"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
 
+        <!-- current tags title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Current Tags:"
+            android:text="@string/current_tags"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="8dp"
-            android:textColor="@color/black"/>
+            android:textColor="?attr/colorOnSurface"/>
 
-        <ScrollView
+        <!-- RecyclerView for tags -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/tagsRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:background="#F3E8FF">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/tagsRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-        </ScrollView>
     </LinearLayout>
-
 </layout>

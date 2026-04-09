@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+// Task table
 @Entity(tableName = "task_table")
 data class Task(
     @PrimaryKey(autoGenerate = true)
@@ -42,6 +43,6 @@ data class Task(
     @ColumnInfo(name = "total_deferrals")
     var totalDeferrals: Int = 0,
 
-    @ColumnInfo(name = "is_completed")
+    @ColumnInfo(name = "is_completed") // for check boxes
     var isCompleted: Boolean = false
 )

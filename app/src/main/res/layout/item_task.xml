@@ -6,11 +6,13 @@
     android:background="@drawable/analytic_card"
     android:padding="14dp">
 
+    <!-- Layout for tasks on to do list for recycler view -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!-- Checkbox to mark tasks if they are done -->
         <CheckBox
             android:id="@+id/taskCheckBox"
             android:layout_width="wrap_content"
@@ -19,6 +21,7 @@
             android:padding="6dp"
             android:checked="false" />
 
+        <!-- Task name text -->
         <TextView
             android:id="@+id/taskNameText"
             android:layout_width="0dp"
@@ -35,14 +38,17 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!-- Task tag text -->
         <TextView
             android:id="@+id/taskTagText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+            android:textColor="@color/black"/>
 
+        <!-- Task due date text -->
         <TextView
             android:id="@+id/taskDueDateText"
             android:layout_width="wrap_content"
@@ -50,7 +56,8 @@
             android:layout_gravity="center_vertical"
             android:gravity="end"
             android:layout_weight="1"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+            android:textColor="@color/black"/>
 
     </LinearLayout>
 </LinearLayout>

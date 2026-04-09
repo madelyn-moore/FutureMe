@@ -17,6 +17,7 @@ import com.example.futureme.databinding.FragmentToDoListBinding
 
 class ToDoListFragment : Fragment() {
 
+    // variables
     private var _binding: FragmentToDoListBinding? = null
     private val binding get() = _binding!!
 
@@ -30,6 +31,7 @@ class ToDoListFragment : Fragment() {
     ): View {
         _binding = FragmentToDoListBinding.inflate(inflater, container, false)
 
+        // Initialize ViewModel
         val application = requireNotNull(activity).application
         val dao = TaskDatabase.getInstance(application).taskDao
         val tagDao = TaskDatabase.getInstance(application).tagDao
@@ -46,20 +48,32 @@ class ToDoListFragment : Fragment() {
         return binding.root
     }
 
+    // setup recycler view
     private fun setupRecyclerView() {
-        adapter = TaskAdapter { taskId ->
-            // FIX: Changed "taskID" to "taskId" to match TaskViewFragment's expected key
-            val bundle = bundleOf("taskId" to taskId)
-            findNavController().navigate(R.id.action_toDoList_to_taskView, bundle)
-        }
+        // Correctly initialize TaskAdapter with two lambdas
+        adapter = TaskAdapter(
+            // sets up the task click to be able to navigate to the task view
+            onTaskClicked = { taskId ->
+                val bundle = bundleOf("taskId" to taskId)
+                findNavController().navigate(R.id.action_toDoList_to_taskView, bundle)
+            },
+            // sets up the checkbox
+            onTaskChecked = { task, isChecked ->
+                viewModel.toggleTaskCompletion(task, isChecked)
+            }
+        )
+
+        // Set up RecyclerView
         binding.taskRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.taskRecyclerView.adapter = adapter
 
+        // Observe tasks and submit them to the adapter
         viewModel.filteredTasks.observe(viewLifecycleOwner) { tasks ->
             adapter.submitList(tasks)
         }
     }
 
+    // set up search to edit text
     private fun setupSearch() {
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -74,7 +88,9 @@ class ToDoListFragment : Fragment() {
         })
     }
 
+    // sets up filters
     private fun setupFilters() {
+        // Status and sort options for filters
         val statusOptions = listOf("All", "Overdue", "Completed", "Incomplete")
         val sortOptions = listOf("Due Date ↑", "Due Date ↓", "Name A-Z", "Tag A-Z")
 
@@ -85,6 +101,7 @@ class ToDoListFragment : Fragment() {
         )
         statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.statusSpinner.adapter = statusAdapter
+        binding.statusSpinner.setSelection(3) // default selection to uncompleted
 
         val sortAdapter = ArrayAdapter(
             requireContext(),
@@ -94,6 +111,7 @@ class ToDoListFragment : Fragment() {
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.sortSpinner.adapter = sortAdapter
 
+        // Set up listeners for status filters
         binding.statusSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -114,6 +132,7 @@ class ToDoListFragment : Fragment() {
             }
         }
 
+        // Sets up filters for sorting
         binding.sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,

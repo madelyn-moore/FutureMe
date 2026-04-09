@@ -8,4 +8,10 @@
     <color name="purple_card">#E9D8FD</color>
     <color name="text_dark">#1F1B24</color>
     <color name="text_muted">#6E6A75</color>
+
+    <!-- Dark Mode Colors -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#444444</color> <!-- Lightened significantly for visibility -->
+    <color name="dark_primary">#BB86FC</color>
+    <color name="dark_on_surface">#DEFFFFFF</color>
 </resources>

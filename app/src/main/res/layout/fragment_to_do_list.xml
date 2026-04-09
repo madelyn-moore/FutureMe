@@ -11,17 +11,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="12dp"
+        android:background="?android:attr/windowBackground">
 
-        <!-- SEARCH BAR (ONLY ONE) -->
+        <!-- SEARCH BAR -->
         <EditText
             android:id="@+id/searchEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search tasks..."
-            android:padding="10dp"
-            android:textColor="@color/black"
-            android:background="@android:drawable/edit_text" />
+            android:hint="@string/search_tasks"
+            android:padding="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?android:attr/textColorSecondary"
+            android:background="@android:drawable/edit_text"
+            android:backgroundTint="?attr/colorSurface" />
 
         <!-- FILTER ROW -->
         <LinearLayout
@@ -30,32 +33,53 @@
             android:orientation="horizontal"
             android:layout_marginTop="8dp">
 
-            <Spinner
-                android:id="@+id/statusSpinner"
+            <!-- Wrapped Spinner to allow background color -->
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:padding="4dp"
+                android:background="@android:drawable/edit_text"
+                android:backgroundTint="?attr/colorSurface">
 
-            <Spinner
-                android:id="@+id/sortSpinner"
+                <!-- Status spinner-->
+                <Spinner
+                    android:id="@+id/statusSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:backgroundTint="?attr/colorOnSurface"
+                    android:popupBackground="?attr/colorSurface" />
+            </FrameLayout>
+
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:padding="4dp"
+                android:background="@android:drawable/edit_text"
+                android:backgroundTint="?attr/colorSurface">
+
+                <!-- Sort spinner-->
+                <Spinner
+                    android:id="@+id/sortSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:backgroundTint="?attr/colorOnSurface"
+                    android:popupBackground="?attr/colorSurface" />
+            </FrameLayout>
         </LinearLayout>
 
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:background="#F3E8FF">
         <!-- TASK LIST -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/taskRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_marginTop="10dp" />
-    </ScrollView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/taskRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp" />
+
     </LinearLayout>
 </layout>

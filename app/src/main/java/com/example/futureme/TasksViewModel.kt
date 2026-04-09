@@ -27,8 +27,8 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     // =========================================
     val newTaskName = MutableLiveData("")
     val newTaskTags = MutableLiveData("")
-    val newTaskDueDate = MutableLiveData("")
-    val newTaskDatePostponed = MutableLiveData("")
+    val newTaskDueDate = MutableLiveData("") // Starts empty
+    val newTaskDatePostponed = MutableLiveData(getCurrentDateString()) // Prefilled with today
     val newTaskDescription = MutableLiveData("")
     val newTaskWhyPushedOff = MutableLiveData("")
     val newTaskPenalties = MutableLiveData("n/a")
@@ -44,12 +44,13 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     // XML BINDING ALIASES
     // =========================================
     val newName = newTaskName
+
     val newTags = newTaskTags
     val newDueDate = newTaskDueDate
     val newDatePostponed = newTaskDatePostponed
     val newDescription = newTaskDescription
     val newWhyTaskPushedOff = newTaskWhyPushedOff
-    val newWhyPushedOff = newTaskWhyPushedOff
+
     val newPenalties = newTaskPenalties
     val newDateCompleted = newTaskDateCompleted
     val newNumDaysDelayed = newTaskNumDaysDelayed
@@ -61,7 +62,7 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     private val _searchQuery = MutableLiveData("")
     val searchQuery: LiveData<String> = _searchQuery
 
-    private val _statusFilter = MutableLiveData(TaskStatusFilter.ALL)
+    private val _statusFilter = MutableLiveData(TaskStatusFilter.INCOMPLETE)
     val statusFilter: LiveData<TaskStatusFilter> = _statusFilter
 
     private val _sortOption = MutableLiveData(TaskSortOption.DUE_DATE_ASC)
@@ -173,7 +174,6 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
 
     fun addTask() {
         val name = newTaskName.value?.trim() ?: ""
-        // Crucial fix: Pull tag name from selectedTag
         val tags = selectedTag.value?.tagName ?: ""
         val dueDate = newTaskDueDate.value?.trim() ?: ""
         val datePostponed = newTaskDatePostponed.value?.trim() ?: ""
@@ -316,6 +316,23 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
             }
         }
     }
+    
+    fun toggleTaskCompletion(task: Task, isCompleted: Boolean) {
+        val dateCompleted = if (isCompleted) {
+            val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
+            currentDate
+        } else {
+            ""
+        }
+        val updatedTask = task.copy(
+            isCompleted = isCompleted,
+            dateCompleted = dateCompleted,
+            overdueStatus = if (isCompleted) false else calculateOverdue(task),
+        )
+        viewModelScope.launch {
+            dao.update(updatedTask)
+        }
+    }
 
     // =========================================
     // ANALYTICS
@@ -449,12 +466,16 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     // =========================================
     // HELPERS
     // =========================================
+    fun getCurrentDateString(): String {
+        return SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
+    }
+
     private fun clearTaskFields() {
         currentTaskId = 0L
         newTaskName.value = ""
         newTaskTags.value = ""
-        newTaskDueDate.value = ""
-        newTaskDatePostponed.value = ""
+        newTaskDueDate.value = "" // Reset to empty
+        newTaskDatePostponed.value = getCurrentDateString() // Reset to today
         newTaskDescription.value = ""
         newTaskWhyPushedOff.value = ""
         newTaskPenalties.value = "n/a"
@@ -531,9 +552,7 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         return null
     }
 
-    // =========================================
-    // Tags
-    // =========================================
+    // Tag Management Functions
     fun addTag() {
         val name = tagNameInput.value?.trim() ?: ""
         if (name.isNotEmpty()) {

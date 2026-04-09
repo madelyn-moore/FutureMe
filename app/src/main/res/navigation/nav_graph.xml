@@ -5,50 +5,61 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/toDoList">
 
+    <!-- Navigation instructions for fragments -->
+    <!-- To do list fragment -->
     <fragment
         android:id="@+id/toDoList"
         android:name="com.example.futureme.ToDoListFragment"
-        android:label="Tasks"
+        android:label="@string/tasks"
         tools:layout="@layout/fragment_to_do_list">
+        <!-- To do list fragment to task view fragment -->
         <action
             android:id="@+id/action_toDoList_to_taskView"
             app:destination="@id/taskView" />
     </fragment>
 
+    <!-- Analytics fragment -->
     <fragment
         android:id="@+id/analytics"
         android:name="com.example.futureme.AnalyticsFragment"
-        android:label="Analytics"
+        android:label="@string/analytics"
         tools:layout="@layout/fragment_analytics" />
 
+    <!-- Task view fragment -->
     <fragment
         android:id="@+id/taskView"
         android:name="com.example.futureme.TaskViewFragment"
-        android:label="Task Details"
+        android:label="@string/task_details"
         tools:layout="@layout/fragment_task_view">
+        <!-- Task view fragment to add edit task fragment -->
         <action
             android:id="@+id/action_taskView_to_addEditTask"
             app:destination="@id/addEditTask" />
     </fragment>
 
+    <!-- Settings fragment -->
     <fragment
         android:id="@+id/settings"
         android:name="com.example.futureme.SettingsFragment"
-        android:label="Settings"
+        android:label="@string/settings"
         tools:layout="@layout/fragment_settings" >
+        <!-- Settings fragment to add tags fragment -->
         <action
             android:id="@+id/action_settings_to_addTags"
             app:destination="@id/addTags" />
     </fragment>
 
+    <!-- Add edit task fragment -->
     <fragment
         android:id="@+id/addEditTask"
         android:name="com.example.futureme.AddEditTaskFragment"
-        android:label="Add/Edit Task"
+        android:label="@string/add_edit_task"
         tools:layout="@layout/fragment_add_edit_task" />
+
+    <!-- Add tags fragment -->
     <fragment
         android:id="@+id/addTags"
         android:name="com.example.futureme.AddTags"
-        android:label="Add Tags"
+        android:label="@string/add_tags"
         tools:layout="@layout/fragment_add_tags" />
 </navigation>

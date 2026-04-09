@@ -56,6 +56,7 @@ class SettingsFragment : Fragment() {
         return binding.root
     }
 
+    // sets up the add tag button for navigation
     private fun setupTagButton(){
         binding.addTagButton.setOnClickListener {
             findNavController().navigate(R.id.action_settings_to_addTags)

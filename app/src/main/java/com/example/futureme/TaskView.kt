@@ -9,10 +9,11 @@ import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.futureme.databinding.FragmentAddEditTaskBinding
 import com.example.futureme.databinding.FragmentTaskViewBinding
 
+// TaskViewFragment
 class TaskViewFragment : Fragment() {
+    // variables
     private var _binding: FragmentTaskViewBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: TasksViewModel
@@ -29,8 +30,6 @@ class TaskViewFragment : Fragment() {
 
         val application = requireNotNull(activity).application
         val database = TaskDatabase.getInstance(application)
-        val dao = TaskDatabase.getInstance(application).taskDao
-        val tagDao = TaskDatabase.getInstance(application).tagDao
         val viewModelFactory = TasksViewModelFactory(database.taskDao, database.tagDao)
         viewModel = ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
 
@@ -55,6 +54,7 @@ class TaskViewFragment : Fragment() {
         return binding.root
     }
 
+    // setup buttons
     private fun setupButtons() {
         binding.editButton.setOnClickListener {
             if (currentTaskId != -1L) {
@@ -64,18 +64,20 @@ class TaskViewFragment : Fragment() {
         }
 
         binding.deleteButton.setOnClickListener {
-            // To delete, we need the actual Task object. We can observe it once.
             val database = TaskDatabase.getInstance(requireContext())
             database.taskDao.get(currentTaskId).observe(viewLifecycleOwner) { task ->
-                task?.let {
-                    viewModel.deleteTask(it)
+                if (task != null) {
+                    viewModel.deleteTask(task)
                     Toast.makeText(requireContext(), "Task deleted", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
+                } else {
+                    Toast.makeText(requireContext(), "No task to delete", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
+    // load task from args if needed
     private fun loadTaskFromArgsIfNeeded() {
         val args = arguments ?: return
         val taskId = args.getLong("taskId", -1L)
