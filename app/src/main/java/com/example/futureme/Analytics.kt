@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.futureme.databinding.FragmentAnalyticsBinding
@@ -34,154 +35,135 @@ class AnalyticsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout using view binding
         _binding = FragmentAnalyticsBinding.inflate(inflater, container, false)
 
-        // Get the DAO from the Room database
         val application = requireNotNull(activity).application
-        val dao = TaskDatabase.getInstance(application).taskDao
-        val tagDao = TaskDatabase.getInstance(application).tagDao
-
-
-        // Build the ViewModel using the factory
-        val viewModelFactory = TasksViewModelFactory(dao, tagDao)
+        val database = TaskDatabase.getInstance(application)
+        val viewModelFactory = TasksViewModelFactory(database.taskDao, database.tagDao)
         viewModel = ViewModelProvider(this, viewModelFactory)[TasksViewModel::class.java]
 
-        // Attach ViewModel to XML for data binding
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        // Set up tap-to-expand sections
         setupExpandableSections()
-
-        // Observe analytics data and update charts
         observeCharts()
 
         return binding.root
     }
 
-    // Set up tap to expand sections
     private fun setupExpandableSections() {
-        // Toggle weekly delay section
         binding.weeklyHeader.setOnClickListener {
             toggleSection(binding.weeklyContent)
         }
 
-        // Toggle task behavior donut chart section
         binding.statusHeader.setOnClickListener {
             toggleSection(binding.statusContent)
         }
 
-        // Toggle overdue-by-tag bar chart section
         binding.tagHeader.setOnClickListener {
             toggleSection(binding.tagContent)
         }
     }
 
-    // Toggle a section's visibility
     private fun toggleSection(view: View) {
-        // Show the section if hidden, hide it if visible
         view.visibility = if (view.visibility == View.VISIBLE) View.GONE else View.VISIBLE
     }
 
-    // Observe analytics data and update charts
     private fun observeCharts() {
-        // Observe weekly average delay data
         viewModel.weeklyAverageDelay.observe(viewLifecycleOwner) { values ->
             updateWeeklyLineChart(values)
         }
 
-        // Observe procrastination behavior breakdown
         viewModel.procrastinationBreakdown.observe(viewLifecycleOwner) { breakdown ->
             updateDonutChart(breakdown)
         }
 
-        // Observe overdue tasks grouped by tag
         viewModel.overdueByTag.observe(viewLifecycleOwner) { tagMap ->
             updateTagBarChart(tagMap)
         }
     }
 
-    // Update the weekly line chart with new data
     private fun updateWeeklyLineChart(values: List<Float>) {
-        val labels = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        val textColor = ContextCompat.getColor(requireContext(), R.color.text_dark)
+        val cardColor = Color.parseColor("#F4F1ED")
 
-        // Create chart entries from weekly values
+        if (values.isEmpty() || values.all { it == 0f }) {
+            binding.weeklyLineChart.clear()
+            binding.weeklyLineChart.setNoDataText("No weekly delay data yet")
+            binding.weeklyLineChart.setNoDataTextColor(textColor)
+            binding.weeklyLineChart.setBackgroundColor(cardColor)
+            binding.weeklyLineChart.invalidate()
+            return
+        }
+
+        val labels = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
         val entries = values.mapIndexed { index, value ->
             Entry(index.toFloat(), value)
         }
 
         val dataSet = LineDataSet(entries, "Average Delay by Day")
-
-        // Purple/blue project color palette
         dataSet.color = Color.parseColor("#7E6AA2")
         dataSet.circleColors = listOf(Color.parseColor("#B8A4D4"))
         dataSet.lineWidth = 3f
         dataSet.circleRadius = 5f
         dataSet.valueTextSize = 11f
-        dataSet.valueTextColor = Color.parseColor("#1D1230")
+        dataSet.valueTextColor = textColor
         dataSet.setDrawValues(true)
-
-        // Fill area under the line with a soft lavender
         dataSet.setDrawFilled(true)
         dataSet.fillColor = Color.parseColor("#DCD2F0")
 
         val lineData = LineData(dataSet)
 
         binding.weeklyLineChart.data = lineData
-        binding.weeklyLineChart.setBackgroundColor(Color.parseColor("#F4F1ED"))
+        binding.weeklyLineChart.setBackgroundColor(cardColor)
         binding.weeklyLineChart.description.isEnabled = false
         binding.weeklyLineChart.axisRight.isEnabled = false
         binding.weeklyLineChart.setTouchEnabled(false)
         binding.weeklyLineChart.setPinchZoom(false)
         binding.weeklyLineChart.setDrawGridBackground(false)
+        binding.weeklyLineChart.legend.form = Legend.LegendForm.LINE
+        binding.weeklyLineChart.legend.textSize = 12f
+        binding.weeklyLineChart.legend.textColor = textColor
         binding.weeklyLineChart.animateX(1000, Easing.EaseInOutQuart)
 
-        // Style X axis
         binding.weeklyLineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
         binding.weeklyLineChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         binding.weeklyLineChart.xAxis.granularity = 1f
         binding.weeklyLineChart.xAxis.setDrawGridLines(false)
         binding.weeklyLineChart.xAxis.textSize = 11f
-        binding.weeklyLineChart.xAxis.textColor = Color.parseColor("#1D1230")
+        binding.weeklyLineChart.xAxis.textColor = textColor
 
-        // Style left axis
         binding.weeklyLineChart.axisLeft.axisMinimum = 0f
         binding.weeklyLineChart.axisLeft.textSize = 11f
-        binding.weeklyLineChart.axisLeft.textColor = Color.parseColor("#1D1230")
-
-        // Legend styling
-        binding.weeklyLineChart.legend.form = Legend.LegendForm.LINE
-        binding.weeklyLineChart.legend.textSize = 12f
-        binding.weeklyLineChart.legend.textColor = Color.parseColor("#1D1230")
+        binding.weeklyLineChart.axisLeft.textColor = textColor
 
         binding.weeklyLineChart.invalidate()
     }
 
-    // Update the donut chart with new data
     private fun updateDonutChart(breakdown: Map<String, Int>) {
+        val textColor = ContextCompat.getColor(requireContext(), R.color.text_dark)
+        val cardColor = Color.parseColor("#F4F1ED")
+
         val entries = breakdown.mapNotNull { (label, value) ->
             if (value > 0) PieEntry(value.toFloat(), label) else null
         }
 
-        // If no data exists, show a message instead
         if (entries.isEmpty()) {
             binding.statusDonutChart.clear()
             binding.statusDonutChart.setNoDataText("No task data yet")
+            binding.statusDonutChart.setNoDataTextColor(textColor)
+            binding.statusDonutChart.setBackgroundColor(cardColor)
             binding.statusDonutChart.invalidate()
             return
         }
 
         val dataSet = PieDataSet(entries, "Task Behavior")
-
-        // Use your purple/blue palette
         dataSet.colors = listOf(
-            Color.parseColor("#B8A4D4"), // soft purple
-            Color.parseColor("#7E6AA2"), // lavender
-            Color.parseColor("#1D1230"), // deep plum
-            Color.parseColor("#80A6BB")  // sky blue
+            Color.parseColor("#B8A4D4"),
+            Color.parseColor("#7E6AA2"),
+            Color.parseColor("#1D1230"),
+            Color.parseColor("#80A6BB")
         )
-
         dataSet.sliceSpace = 4f
         dataSet.valueTextSize = 12f
         dataSet.valueTextColor = Color.WHITE
@@ -189,45 +171,44 @@ class AnalyticsFragment : Fragment() {
         val pieData = PieData(dataSet)
 
         binding.statusDonutChart.data = pieData
-        binding.statusDonutChart.setBackgroundColor(Color.parseColor("#F4F1ED"))
+        binding.statusDonutChart.setBackgroundColor(cardColor)
         binding.statusDonutChart.description.isEnabled = false
         binding.statusDonutChart.setUsePercentValues(false)
         binding.statusDonutChart.isDrawHoleEnabled = true
         binding.statusDonutChart.holeRadius = 55f
         binding.statusDonutChart.transparentCircleRadius = 60f
-        binding.statusDonutChart.setHoleColor(Color.parseColor("#F4F1ED"))
+        binding.statusDonutChart.setHoleColor(cardColor)
         binding.statusDonutChart.centerText = "Task\nBehavior"
         binding.statusDonutChart.setCenterTextSize(16f)
-        binding.statusDonutChart.setCenterTextColor(Color.parseColor("#1D1230"))
-        binding.statusDonutChart.setEntryLabelColor(Color.parseColor("#1D1230"))
+        binding.statusDonutChart.setCenterTextColor(textColor)
+        binding.statusDonutChart.setEntryLabelColor(textColor)
         binding.statusDonutChart.setEntryLabelTextSize(11f)
         binding.statusDonutChart.legend.textSize = 12f
-        binding.statusDonutChart.legend.textColor = Color.parseColor("#1D1230")
+        binding.statusDonutChart.legend.textColor = textColor
         binding.statusDonutChart.animateY(1000, Easing.EaseInOutQuad)
 
         binding.statusDonutChart.invalidate()
     }
 
-    // Update the bar chart with new data
     private fun updateTagBarChart(tagMap: Map<String, Int>) {
-        // If there is no data, show message
+        val textColor = ContextCompat.getColor(requireContext(), R.color.text_dark)
+        val cardColor = Color.parseColor("#F4F1ED")
+
         if (tagMap.isEmpty()) {
             binding.tagBarChart.clear()
             binding.tagBarChart.setNoDataText("No overdue tag data yet")
+            binding.tagBarChart.setNoDataTextColor(textColor)
+            binding.tagBarChart.setBackgroundColor(cardColor)
             binding.tagBarChart.invalidate()
             return
         }
 
         val labels = tagMap.keys.toList()
-
-        // Build entries for each tag
         val entries = labels.mapIndexed { index, label ->
             BarEntry(index.toFloat(), (tagMap[label] ?: 0).toFloat())
         }
 
         val dataSet = BarDataSet(entries, "Overdue Tasks by Tag")
-
-        // Purple/blue mixed color palette
         dataSet.colors = listOf(
             Color.parseColor("#7E6AA2"),
             Color.parseColor("#B8A4D4"),
@@ -236,15 +217,14 @@ class AnalyticsFragment : Fragment() {
             Color.parseColor("#DCD2F0"),
             Color.parseColor("#1D1230")
         )
-
         dataSet.valueTextSize = 11f
-        dataSet.valueTextColor = Color.parseColor("#1D1230")
+        dataSet.valueTextColor = textColor
 
         val data = BarData(dataSet)
         data.barWidth = 0.55f
 
         binding.tagBarChart.data = data
-        binding.tagBarChart.setBackgroundColor(Color.parseColor("#F4F1ED"))
+        binding.tagBarChart.setBackgroundColor(cardColor)
         binding.tagBarChart.description.isEnabled = false
         binding.tagBarChart.axisRight.isEnabled = false
         binding.tagBarChart.setTouchEnabled(false)
@@ -252,22 +232,20 @@ class AnalyticsFragment : Fragment() {
         binding.tagBarChart.setFitBars(true)
         binding.tagBarChart.animateY(1000)
 
-        // Style X axis
         binding.tagBarChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
         binding.tagBarChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
         binding.tagBarChart.xAxis.granularity = 1f
         binding.tagBarChart.xAxis.labelRotationAngle = -20f
         binding.tagBarChart.xAxis.setDrawGridLines(false)
         binding.tagBarChart.xAxis.textSize = 11f
-        binding.tagBarChart.xAxis.textColor = Color.parseColor("#1D1230")
+        binding.tagBarChart.xAxis.textColor = textColor
 
-        // Style left axis
         binding.tagBarChart.axisLeft.axisMinimum = 0f
         binding.tagBarChart.axisLeft.textSize = 11f
-        binding.tagBarChart.axisLeft.textColor = Color.parseColor("#1D1230")
+        binding.tagBarChart.axisLeft.textColor = textColor
 
         binding.tagBarChart.legend.textSize = 12f
-        binding.tagBarChart.legend.textColor = Color.parseColor("#1D1230")
+        binding.tagBarChart.legend.textColor = textColor
 
         binding.tagBarChart.invalidate()
     }

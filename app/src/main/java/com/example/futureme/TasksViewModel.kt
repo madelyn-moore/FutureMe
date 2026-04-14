@@ -27,8 +27,8 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     // =========================================
     val newTaskName = MutableLiveData("")
     val newTaskTags = MutableLiveData("")
-    val newTaskDueDate = MutableLiveData("") // Starts empty
-    val newTaskDatePostponed = MutableLiveData(getCurrentDateString()) // Prefilled with today
+    val newTaskDueDate = MutableLiveData("")
+    val newTaskDatePostponed = MutableLiveData("")
     val newTaskDescription = MutableLiveData("")
     val newTaskWhyPushedOff = MutableLiveData("")
     val newTaskPenalties = MutableLiveData("n/a")
@@ -44,13 +44,11 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     // XML BINDING ALIASES
     // =========================================
     val newName = newTaskName
-
     val newTags = newTaskTags
     val newDueDate = newTaskDueDate
     val newDatePostponed = newTaskDatePostponed
     val newDescription = newTaskDescription
     val newWhyTaskPushedOff = newTaskWhyPushedOff
-
     val newPenalties = newTaskPenalties
     val newDateCompleted = newTaskDateCompleted
     val newNumDaysDelayed = newTaskNumDaysDelayed
@@ -156,8 +154,7 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         newTaskDateCompleted.value = task.dateCompleted
         newTaskNumDaysDelayed.value = task.numDaysDelayed
         newTaskOverdueStatus.value = task.overdueStatus
-        
-        // Try to match tag in spinner
+
         selectedTag.value = allTags.value?.find { it.tagName == task.tags }
     }
 
@@ -223,7 +220,12 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         recalculateTaskStats()
 
         val originalTask = allTasks.value?.find { it.taskId == currentTaskId }
-        val deferrals = originalTask?.totalDeferrals ?: if (datePostponed.isNotBlank()) 1 else 0
+        val deferrals = when {
+            originalTask == null && datePostponed.isNotBlank() -> 1
+            originalTask == null -> 0
+            datePostponed.isNotBlank() && originalTask.totalDeferrals == 0 -> 1
+            else -> originalTask.totalDeferrals
+        }
 
         val updatedTask = Task(
             taskId = currentTaskId,
@@ -316,19 +318,20 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
             }
         }
     }
-    
+
     fun toggleTaskCompletion(task: Task, isCompleted: Boolean) {
         val dateCompleted = if (isCompleted) {
-            val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
-            currentDate
+            SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
         } else {
             ""
         }
+
         val updatedTask = task.copy(
             isCompleted = isCompleted,
             dateCompleted = dateCompleted,
-            overdueStatus = if (isCompleted) false else calculateOverdue(task),
+            overdueStatus = if (isCompleted) false else calculateOverdue(task)
         )
+
         viewModelScope.launch {
             dao.update(updatedTask)
         }
@@ -340,7 +343,7 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     val postponedTaskCount = MediatorLiveData<Int>().apply {
         fun update() {
             val tasks = allTasks.value ?: emptyList()
-            value = tasks.count { it.totalDeferrals > 0 }
+            value = tasks.count { hasBeenDeferred(it) }
         }
         addSource(allTasks) { update() }
     }
@@ -382,7 +385,10 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     val averageDelay = MediatorLiveData<Double>().apply {
         fun update() {
             val tasks = allTasks.value ?: emptyList()
-            val validDelays = tasks.mapNotNull { it.numDaysDelayed.toDoubleOrNull() }
+            val validDelays = tasks
+                .mapNotNull { it.numDaysDelayed.toDoubleOrNull() }
+                .filter { it > 0.0 }
+
             value = if (validDelays.isEmpty()) 0.0 else validDelays.average()
         }
         addSource(allTasks) { update() }
@@ -391,7 +397,9 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     val mostDeferredTask = MediatorLiveData<Task?>().apply {
         fun update() {
             val tasks = allTasks.value ?: emptyList()
-            value = tasks.maxByOrNull { it.totalDeferrals }
+            value = tasks
+                .filter { hasBeenDeferred(it) }
+                .maxByOrNull { it.totalDeferrals }
         }
         addSource(allTasks) { update() }
     }
@@ -406,6 +414,18 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     val mostDeferredTaskDeferrals = MediatorLiveData<Int>().apply {
         fun update() {
             value = mostDeferredTask.value?.totalDeferrals ?: 0
+        }
+        addSource(mostDeferredTask) { update() }
+    }
+
+    val mostDeferredTaskSummary = MediatorLiveData<String>().apply {
+        fun update() {
+            val task = mostDeferredTask.value
+            value = if (task == null) {
+                "None"
+            } else {
+                "${task.name} (${task.totalDeferrals})"
+            }
         }
         addSource(mostDeferredTask) { update() }
     }
@@ -427,13 +447,13 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         fun update() {
             val tasks = allTasks.value ?: emptyList()
             value = listOf(
-                averageDelayForDay(tasks, 0),
-                averageDelayForDay(tasks, 1),
-                averageDelayForDay(tasks, 2),
-                averageDelayForDay(tasks, 3),
-                averageDelayForDay(tasks, 4),
-                averageDelayForDay(tasks, 5),
-                averageDelayForDay(tasks, 6)
+                averageDelayForDay(tasks, Calendar.SUNDAY),
+                averageDelayForDay(tasks, Calendar.MONDAY),
+                averageDelayForDay(tasks, Calendar.TUESDAY),
+                averageDelayForDay(tasks, Calendar.WEDNESDAY),
+                averageDelayForDay(tasks, Calendar.THURSDAY),
+                averageDelayForDay(tasks, Calendar.FRIDAY),
+                averageDelayForDay(tasks, Calendar.SATURDAY)
             )
         }
         addSource(allTasks) { update() }
@@ -442,11 +462,17 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     val procrastinationBreakdown = MediatorLiveData<Map<String, Int>>().apply {
         fun update() {
             val tasks = allTasks.value ?: emptyList()
-            value = mapOf(
-                "Overdue" to tasks.count { calculateOverdue(it) && !it.isCompleted },
-                "Completed" to tasks.count { it.isCompleted },
-                "Deferred" to tasks.count { it.totalDeferrals > 0 },
-                "On Time" to tasks.count { !calculateOverdue(it) && !it.isCompleted }
+
+            val completed = tasks.count { it.isCompleted }
+            val overdue = tasks.count { !it.isCompleted && calculateOverdue(it) }
+            val deferred = tasks.count { !it.isCompleted && !calculateOverdue(it) && hasBeenDeferred(it) }
+            val onTime = tasks.count { !it.isCompleted && !calculateOverdue(it) && !hasBeenDeferred(it) }
+
+            value = linkedMapOf(
+                "Overdue" to overdue,
+                "Completed" to completed,
+                "Deferred" to deferred,
+                "On Time" to onTime
             )
         }
         addSource(allTasks) { update() }
@@ -457,8 +483,9 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
             val tasks = allTasks.value ?: emptyList()
             value = tasks
                 .filter { calculateOverdue(it) && !it.isCompleted }
-                .groupBy { if (it.tags.isBlank()) "No Tag" else it.tags }
+                .groupBy { if (it.tags.isBlank()) "No Tag" else it.tags.trim() }
                 .mapValues { entry -> entry.value.size }
+                .toSortedMap()
         }
         addSource(allTasks) { update() }
     }
@@ -474,8 +501,8 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         currentTaskId = 0L
         newTaskName.value = ""
         newTaskTags.value = ""
-        newTaskDueDate.value = "" // Reset to empty
-        newTaskDatePostponed.value = getCurrentDateString() // Reset to today
+        newTaskDueDate.value = ""
+        newTaskDatePostponed.value = ""
         newTaskDescription.value = ""
         newTaskWhyPushedOff.value = ""
         newTaskPenalties.value = "n/a"
@@ -483,6 +510,10 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         newTaskNumDaysDelayed.value = "0"
         newTaskOverdueStatus.value = false
         selectedTag.value = null
+    }
+
+    private fun hasBeenDeferred(task: Task): Boolean {
+        return task.datePostponed.isNotBlank() || task.totalDeferrals > 0
     }
 
     private fun calculateOverdue(task: Task): Boolean {
@@ -506,26 +537,20 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         return if (diffDays > 0) diffDays.toString() else "0"
     }
 
-    private fun averageDelayForDay(tasks: List<Task>, dayIndex: Int): Float {
+    private fun averageDelayForDay(tasks: List<Task>, dayOfWeek: Int): Float {
         val filtered = tasks.filter { task ->
+            if (!hasBeenDeferred(task)) return@filter false
+
             val postponedDate = parseDate(task.datePostponed) ?: return@filter false
             val calendar = Calendar.getInstance()
             calendar.time = postponedDate
-
-            val mappedDay = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-                Calendar.MONDAY -> 0
-                Calendar.TUESDAY -> 1
-                Calendar.WEDNESDAY -> 2
-                Calendar.THURSDAY -> 3
-                Calendar.FRIDAY -> 4
-                Calendar.SATURDAY -> 5
-                else -> 6
-            }
-
-            mappedDay == dayIndex
+            calendar.get(Calendar.DAY_OF_WEEK) == dayOfWeek
         }
 
-        val delays = filtered.mapNotNull { it.numDaysDelayed.toFloatOrNull() }
+        val delays = filtered
+            .mapNotNull { it.numDaysDelayed.toFloatOrNull() }
+            .filter { it >= 0f }
+
         return if (delays.isEmpty()) 0f else delays.average().toFloat()
     }
 
@@ -552,7 +577,9 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
         return null
     }
 
-    // Tag Management Functions
+    // =========================================
+    // TAG MANAGEMENT
+    // =========================================
     fun addTag() {
         val name = tagNameInput.value?.trim() ?: ""
         if (name.isNotEmpty()) {
@@ -564,6 +591,7 @@ class TasksViewModel(private val dao: TaskDao, private val tagDao: TagDAO) : Vie
     }
 
     val tagTOBeDeleted = MutableLiveData<Tag?>(null)
+
     fun deleteTag(tag: Tag) {
         viewModelScope.launch {
             tagDao.delete(tag)
